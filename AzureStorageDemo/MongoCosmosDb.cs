@@ -20,7 +20,7 @@ namespace AzureStorageDemo
     public static class MongoCosmosDb
     {
         private const string ConnString =
-            "mongodb://6f0d4f20-0ee0-4-231-b9ee:TfO9s3DlvlLZdtmfK7824aMlOrmPh9pkcit14DxBVFGoC9zZIkrCEdp4C64yl4C22vicmzioBk3qUP7UYSZHuw==@6f0d4f20-0ee0-4-231-b9ee.documents.azure.com:10255/?ssl=true&replicaSet=globaldb";
+            "{yourconnectionstringhere}";
 
         public static async Task<TimeSpan> InsertPersons(int numRows)
         {

@@ -11,7 +11,7 @@ namespace AzureStorageDemo
     public class BlockBlobs
     {
         private const string ConnString =
-            "DefaultEndpointsProtocol=https;AccountName=ctazurestorage;AccountKey=rsiC2YWwRDF2uRhzJmo38VGYjtaz+sBuOOei8w0aNuj0xTyGhZuicxcCftnvE4rkCOMbYa8cb+RNTMoTbTbacQ==;EndpointSuffix=core.windows.net";
+            "{yourconnectionstringhere}";
 
         public static async Task<TimeSpan> TestBlobStorage(int blobKilobytes)
         {

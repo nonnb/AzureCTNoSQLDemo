@@ -32,7 +32,7 @@ namespace AzureStorageDemo
         }
 
         // Azure
-        private const string ConnString = "Server=tcp:azurectserver.database.windows.net,1433;Initial Catalog=azurectbasic;Persist Security Info=False;User ID=azurectadmin;Password=P4$$w0rdAzur3CT;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        private const string ConnString = "{yourconnectionstringhere}";
         // Local on Prem
         // private const string connString = @"Data Source=.\SQLEXPRESS;Initial Catalog=AzureCT;Integrated Security=True";
 
