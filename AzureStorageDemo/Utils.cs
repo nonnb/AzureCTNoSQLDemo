@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,15 @@ namespace AzureStorageDemo
             action();
             sw.Stop();
             Console.WriteLine($"Completed in {sw.ElapsedMilliseconds} milliseconds");
+        }
+
+        public static async Task<TimeSpan> Time(Func<Task> task)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            await task();
+            sw.Stop();
+            return sw.Elapsed;
         }
 
         public static async Task Time(string description, Func<Task> task)
@@ -50,5 +60,32 @@ namespace AzureStorageDemo
                 .ToArray());
         }
 
+        private static readonly IEnumerable<string> Surnames = new[]
+        {
+            "Smith",
+            "Jones",
+            "Federer",
+            "Foobar-Bazton",
+            "LoadTest",
+            "Messi",
+            "Pear",
+            "Reddington",
+            "Ronaldo",
+            "Smurf",
+            "Teaspoon",
+            "TestUser",
+            "van der Merwe"
+        };
+
+        public static IEnumerable<string> InfiniteSurnames()
+        {
+            while (true)
+            {
+                foreach (var surname in Surnames)
+                {
+                    yield return surname;
+                }
+            }
+        }
     }
 }

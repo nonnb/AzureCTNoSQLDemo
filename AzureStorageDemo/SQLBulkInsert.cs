@@ -2,18 +2,41 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static AzureStorageDemo.Utils;
 
 namespace AzureStorageDemo
 {
-    [TestClass]
-    public class SQLBulkInsert
+    public class SqlBulkInsert
     {
-        // Azure
-        private const string connString = "";
+        public static async Task<TimeSpan> BulkCopy(int rowsToInsert)
+        {
+            var rowsToWrite = CreateDataTable(rowsToInsert);
+            return await Time(
+                async () =>
+                {
+                    using (var sqlConn = new SqlConnection(ConnString))
+                    using (var bulkCopy = new SqlBulkCopy(sqlConn)
+                    {
+                        BulkCopyTimeout = (int) TimeSpan.FromMinutes(1).TotalSeconds,
+                        BatchSize = 1000
+                    })
+                    {
+                        sqlConn.Open();
+                        bulkCopy.DestinationTableName = "dbo.BulkCopyTable";
+                        bulkCopy.ColumnMappings.Add("TheValue", "TheValue");
+                        // Write from the source to the destination.
+                        await bulkCopy.WriteToServerAsync(rowsToWrite);
+                        bulkCopy.Close();
+                    }
+                });
+        }
 
-        private DataTable CreateDataTable(int nRows)
+        // Azure
+        private const string ConnString = "Server=tcp:azurectserver.database.windows.net,1433;Initial Catalog=azurectbasic;Persist Security Info=False;User ID=azurectadmin;Password=P4$$w0rdAzur3CT;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        // Local on Prem
+        // private const string connString = @"Data Source=.\SQLEXPRESS;Initial Catalog=AzureCT;Integrated Security=True";
+
+        private static DataTable CreateDataTable(int nRows)
         {
             var dataTable = new DataTable("Strings");
 
@@ -28,40 +51,7 @@ namespace AzureStorageDemo
             {
                 dataTable.Rows.Add(RandomString(1024));
             }
-
             return dataTable;
-        }
-
-        [TestMethod]
-        public async Task BulkCopy()
-        {
-            const int rowsToInsert = 100000;
-            var rowsToWrite = CreateDataTable(rowsToInsert);
-            await Time($"Writing {rowsToInsert} rows via SqlBulkCopy",
-                async () =>
-                {
-                    try
-                    {
-                        using (var sqlConn = new SqlConnection(connString))
-                        using (var bulkCopy = new SqlBulkCopy(sqlConn)
-                        {
-                            BulkCopyTimeout = (int)TimeSpan.FromMinutes(1).TotalSeconds,
-                            BatchSize = 1000
-                        })
-                        {
-                            sqlConn.Open();
-                            bulkCopy.DestinationTableName = "dbo.BulkCopyTable";
-                            bulkCopy.ColumnMappings.Add("TheValue", "TheValue");
-                            // Write from the source to the destination.
-                            await bulkCopy.WriteToServerAsync(rowsToWrite);
-                            bulkCopy.Close();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteError($"Oops - {ex.Message}");
-                    }
-                });
         }
     }
 }

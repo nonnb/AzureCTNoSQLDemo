@@ -10,35 +10,26 @@ namespace AzureStorageDemo
     [TestClass]
     public class BlockBlobs
     {
-        private const string ConnString ="";
-            
+        private const string ConnString =
+            "DefaultEndpointsProtocol=https;AccountName=ctazurestorage;AccountKey=rsiC2YWwRDF2uRhzJmo38VGYjtaz+sBuOOei8w0aNuj0xTyGhZuicxcCftnvE4rkCOMbYa8cb+RNTMoTbTbacQ==;EndpointSuffix=core.windows.net";
 
-        [TestMethod]
-        public async Task TestBlobStorage()
+        public static async Task<TimeSpan> TestBlobStorage(int blobKilobytes)
         {
             var container = await GetContainerReference("bigblobs");
             var blobKey = Guid.NewGuid().ToString("N");
             var blockBlob = container.GetBlockBlobReference(blobKey);
             var random = new Random();
-            var blobBytes = new byte[1 * 1024 * 1024];
+            var blobBytes = new byte[blobKilobytes * 1024];
             random.NextBytes(blobBytes);
 
-            await Time("Uploading large Blob",
+            return await Time(
                 async () =>
             {
-                try
-                {
-                    await blockBlob.UploadFromByteArrayAsync(blobBytes, 0, blobBytes.Length);
-                }
-                catch (Exception e)
-                {
-                    WriteError($"Oops! - {e.Message}");
-                }
+                await blockBlob.UploadFromByteArrayAsync(blobBytes, 0, blobBytes.Length);
             });
-
         }
 
-        private async Task<CloudBlobContainer> GetContainerReference(string containerName)
+        private static async Task<CloudBlobContainer> GetContainerReference(string containerName)
         {
             var storageAccount = CloudStorageAccount.Parse(ConnString);
             var blobClient = storageAccount.CreateCloudBlobClient();

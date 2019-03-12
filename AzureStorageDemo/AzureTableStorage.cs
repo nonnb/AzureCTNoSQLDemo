@@ -23,58 +23,16 @@ namespace AzureStorageDemo
     [TestClass]
     public class AzureTableStorage
     {
-        private const string ConnString = "";
+        private const string ConnString =
+            "DefaultEndpointsProtocol=https;AccountName=ctazurestorage;AccountKey=rsiC2YWwRDF2uRhzJmo38VGYjtaz+sBuOOei8w0aNuj0xTyGhZuicxcCftnvE4rkCOMbYa8cb+RNTMoTbTbacQ==;EndpointSuffix=core.windows.net";
 
-        private static readonly IEnumerable<string> Surnames = new[]
+        public static async Task<TimeSpan> TableStorageBatched(int numRows)
         {
-            "Smith",
-            "Jones",
-            "Federer",
-            "Foobar-Bazton",
-            "LoadTest",
-            "Messi",
-            "Pear",
-            "Reddington",
-            "Ronaldo",
-            "Smurf",
-            "Teaspoon",
-            "TestUser",
-            "van der Merwe"
-        };
-
-        private static IEnumerable<string> InfiniteSurnames()
-        {
-            while (true)
-            {
-                foreach (var surname in Surnames)
-                {
-                    yield return surname;
-                }
-            }
-        }
-
-        [TestMethod]
-        public async Task TableStorageBatched()
-        {
-            var numRows = 1000;
             // Max 100 rows, and max Total payload allowed is 4MB
             // Let's say we're 100kB / Person, so ~40
             const int batchSize = 40;
             var table = await GetTableReference();
-            var surnamesIterator = InfiniteSurnames().GetEnumerator();
-            var random = new Random();
-            var avatar = new byte[64 * 1024];
-            var batchedPersonsToInsert = Enumerable.Range(0, numRows)
-                .Select(n =>
-                {
-                    surnamesIterator.MoveNext();
-                    random.NextBytes(avatar);
-                    var personToInsert = new PersonRow(surnamesIterator.Current, RandomString(20, random))
-                    {
-                        Avatar = avatar
-                    };
-                    return personToInsert;
-                })
+            var batchedPersonsToInsert = GenerateRandomPersons(numRows)
                 // All rows in the same batch must have same partition key
                 // Order by surnames (the partition key)
                 .GroupBy(p => p.PartitionKey)
@@ -82,7 +40,7 @@ namespace AzureStorageDemo
                 // Deliberate int trunc on the batchsize, i.e. 0..batchSize => 0, then 1 etc
                 .GroupBy(x => (x.person.PartitionKey, x.idx / batchSize));
 
-            await Time($"Inserting {numRows} persons",
+            return await Time(
                 async () =>
                 {
                     foreach (var personBatch in batchedPersonsToInsert)
@@ -95,6 +53,28 @@ namespace AzureStorageDemo
                         await table.ExecuteBatchAsync(tableStoreBatchOp);
                     }
                 });
+        }
+
+        private static IEnumerable<PersonRow> GenerateRandomPersons(int numRows)
+        {
+            using (var surnamesIterator = InfiniteSurnames().GetEnumerator())
+            {
+                var random = new Random();
+                var avatar = new byte[64 * 1024];
+
+                return Enumerable.Range(0, numRows)
+                    .Select(n =>
+                    {
+                        surnamesIterator.MoveNext();
+                        random.NextBytes(avatar);
+                        var personToInsert = new PersonRow(surnamesIterator.Current, RandomString(20, random))
+                        {
+                            Avatar = avatar
+                        };
+                        return personToInsert;
+                    })
+                    .ToList();
+            }
         }
 
         private static async Task<CloudTable> GetTableReference()

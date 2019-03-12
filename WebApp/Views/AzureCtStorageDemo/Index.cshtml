@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>No SQL Demo (All East US)</h2>
+
+<ul>
+    <li>
+        SQL Bulk Insert
+        <form method="POST" action="@Url.Action("BulkInsert")">
+            <input type="text" name="numRows" /> x rows each 2kB, 1000 rows / batch
+            <input type="submit" value="Go!" />
+        </form>
+    </li>
+    <li>
+        Blob Block Storage
+        <form method="POST" action="@Url.Action("BlobStorage")">
+            <input type="text" name="blobKb" /> kB single Blob
+            <input type="submit" value="Go!" />
+        </form>
+    </li>
+    <li>
+        Table Storage
+        <form method="POST" action="@Url.Action("TableStorage")">
+            <input type="text" name="numRows" /> rows each ~64kB, 40 rows / batch
+            <input type="submit" value="Go!" />
+        </form>
+    </li>
+    <li>
+        QueueStorage
+        <form method="POST" action="@Url.Action("QueueStorageStore")">
+            <input type="text" name="num32kStrings" /> x 32kB messages, parallel async
+            <input type="submit" value="Go!" />
+        </form>
+    </li>
+    <li>
+        Cosmos - MongoDb
+        <form method="POST" action="@Url.Action("MongoCosmosDbInsert")">
+            <input type="text" name="numRows" /> rows each ~64kB, 10 rows / batch
+            <input type="submit" value="Go!" />
+        </form>
+    </li>
+</ul>
+
